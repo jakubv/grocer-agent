@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+type ActiveShoppingItem = {
+  name: string;
+  quantity: number | null;
+  unit: string | null;
+  category: string;
+  addedByUserId: string;
+  notes: string | null;
+};
+
 // POST /api/v1/list/archive
 // Archives the current list and creates a new empty one
 export async function POST(request: NextRequest) {
@@ -35,7 +44,7 @@ export async function POST(request: NextRequest) {
         notes: notes ?? null,
         totalItems: activeList.items.length,
         items: {
-          create: activeList.items.map(item => ({
+          create: activeList.items.map((item: ActiveShoppingItem) => ({
             name: item.name,
             quantity: item.quantity,
             unit: item.unit,

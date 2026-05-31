@@ -4,9 +4,13 @@ import { NextRequest, NextResponse } from 'next/server';
 // Get full details of one archived list
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   // TODO: Auth + fetch archived list with items
+  void request;
+  void id;
 
   return NextResponse.json(
     { message: "Not implemented yet" },

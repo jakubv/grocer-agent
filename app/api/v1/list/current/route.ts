@@ -1,6 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+type CurrentShoppingItem = {
+  id: string;
+  name: string;
+  quantity: number | null;
+  unit: string | null;
+  category: string;
+  addedByUserId: string;
+  addedAt: Date;
+  notes: string | null;
+  isChecked: boolean;
+};
+
 // GET /api/v1/list/current
 // Returns the active shopping list for the household.
 // For v1 we use a single default household.
@@ -47,7 +59,7 @@ export async function GET() {
       householdId: list.householdId,
       status: list.status,
       updatedAt: list.updatedAt,
-      items: list.items.map(item => ({
+      items: list.items.map((item: CurrentShoppingItem) => ({
         id: item.id,
         name: item.name,
         quantity: item.quantity,
