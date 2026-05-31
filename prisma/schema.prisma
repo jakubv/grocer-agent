@@ -1,0 +1,99 @@
+// GrocerAgent Prisma Schema - v1
+// Based on the official DATA_MODELS.md specification
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Household {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users             User[]
+  shoppingLists     ShoppingList[]
+  archivedLists     ArchivedList[]
+  agentCredentials  AgentCredential[]
+}
+
+model User {
+  id          String   @id @default(cuid())
+  householdId String
+  name        String   // "Jakub" or "Mirka"
+  email       String   @unique
+  role        String   @default("member") // owner | member
+  createdAt   DateTime @default(now())
+
+  household Household @relation(fields: [householdId], references: [id])
+}
+
+model ShoppingList {
+  id          String   @id @default(cuid())
+  householdId String
+  status      String   @default("active") // active | archived (we keep only one active)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  household Household      @relation(fields: [householdId], references: [id])
+  items     ShoppingItem[]
+}
+
+model ShoppingItem {
+  id             String   @id @default(cuid())
+  listId         String
+  name           String
+  quantity       Int?
+  unit           String?
+  category       String
+  addedByUserId  String
+  addedAt        DateTime @default(now())
+  notes          String?
+  isChecked      Boolean  @default(false)
+
+  list ShoppingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+}
+
+model ArchivedList {
+  id               String   @id @default(cuid())
+  householdId      String
+  archivedAt       DateTime @default(now())
+  archivedByUserId String
+  orderedFrom      String?  // "Lunys" | "Tesco" | "Both" | null
+  notes            String?
+  totalItems       Int
+
+  household Household       @relation(fields: [householdId], references: [id])
+  items     ArchivedItem[]
+}
+
+model ArchivedItem {
+  id            String   @id @default(cuid())
+  archivedListId String
+  name          String
+  quantity      Int?
+  unit          String?
+  category      String
+  addedBy       String   // Name at time of archiving
+  notes         String?
+
+  archivedList ArchivedList @relation(fields: [archivedListId], references: [id], onDelete: Cascade)
+}
+
+model AgentCredential {
+  id          String    @id @default(cuid())
+  householdId String
+  name        String    // e.g. "Hermes - Main Telegram"
+  keyHash     String    @unique
+  scopes      String    // JSON array stored as string, e.g. '["list:read","list:write"]'
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+
+  household Household @relation(fields: [householdId], references: [id])
+}
+

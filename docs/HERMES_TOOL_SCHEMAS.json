@@ -1,0 +1,112 @@
+{
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_current_shopping_list",
+        "description": "Returns the current active shopping list with all items for the household.",
+        "parameters": {
+          "type": "object",
+          "properties": {}
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "add_items_to_list",
+        "description": "Adds one or more items to the current shopping list. Use this when the user wants to add products.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "description": "Name of the product" },
+                  "quantity": { "type": "number", "description": "Quantity (optional)" },
+                  "unit": { "type": "string", "description": "Unit like ks, g, ml, balenie (optional)" },
+                  "category": { "type": "string", "description": "Category (recommended)" },
+                  "notes": { "type": "string", "description": "Any extra notes (optional)" }
+                },
+                "required": ["name"]
+              }
+            }
+          },
+          "required": ["items"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "remove_item_from_list",
+        "description": "Removes one item from the current shopping list by its ID.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "item_id": { "type": "string" }
+          },
+          "required": ["item_id"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "update_item_in_list",
+        "description": "Updates an existing item (change quantity, notes, etc.).",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "item_id": { "type": "string" },
+            "name": { "type": "string" },
+            "quantity": { "type": "number" },
+            "unit": { "type": "string" },
+            "notes": { "type": "string" }
+          },
+          "required": ["item_id"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "archive_current_list",
+        "description": "Archives the current shopping list and creates a fresh empty one. Use only after user confirmation in most cases.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "ordered_from": {
+              "type": "string",
+              "enum": ["Lunys", "Tesco", "Both"],
+              "description": "Which store the list was ordered from (optional)"
+            },
+            "notes": {
+              "type": "string",
+              "description": "Optional note about this archive (e.g. 'Večera s krevetami')"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_recent_archived_lists",
+        "description": "Returns the most recent archived shopping lists (history).",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "default": 5,
+              "maximum": 20
+            }
+          }
+        }
+      }
+    }
+  ]
+}
