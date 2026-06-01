@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
 interface ArchivedList {
@@ -15,6 +16,7 @@ export default function ShoppingHistory() {
   useEffect(() => {
     const saved = localStorage.getItem('archivedLists');
     if (saved) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setArchivedLists(JSON.parse(saved));
     }
   }, []);
@@ -22,7 +24,7 @@ export default function ShoppingHistory() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="max-w-4xl mx-auto px-6 py-10">
-        <a href="/" className="text-sm text-zinc-400 hover:text-white">← Späť na zoznam</a>
+        <Link href="/" className="text-sm text-zinc-400 hover:text-white">← Späť na zoznam</Link>
         <h1 className="text-4xl font-semibold tracking-tighter mt-4 mb-8">Archivované zoznamy</h1>
 
         {archivedLists.length === 0 ? (

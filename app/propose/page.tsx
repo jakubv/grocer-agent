@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 type ProposalItem = {
@@ -55,7 +56,7 @@ export default function ProposalReview() {
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <a href="/" className="text-sm text-zinc-400 hover:text-white">← Back</a>
+            <Link href="/" className="text-sm text-zinc-400 hover:text-white">← Back</Link>
             <h1 className="text-4xl font-semibold tracking-tighter mt-2">Agent Proposal</h1>
             <p className="text-zinc-400 mt-1">Sunday 25. 5. 2026 • Weekly shop</p>
           </div>

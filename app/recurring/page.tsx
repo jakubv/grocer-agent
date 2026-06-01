@@ -1,14 +1,20 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
+
+type PreferredStore = 'lunys' | 'tesco' | 'either';
 
 interface RecurringItem {
   id: number;
   name: string;
-  preferredStore: 'lunys' | 'tesco' | 'either';
+  preferredStore: PreferredStore;
   quantity: number;
   frequency: string;
 }
+
+const isPreferredStore = (value: string): value is PreferredStore =>
+  value === 'lunys' || value === 'tesco' || value === 'either';
 
 export default function RecurringItems() {
   const [items, setItems] = useState<RecurringItem[]>([
@@ -19,7 +25,11 @@ export default function RecurringItems() {
     { id: 5, name: "Avokádo", preferredStore: "lunys", quantity: 4, frequency: "weekly" },
   ]);
 
-  const [newItem, setNewItem] = useState({ name: '', preferredStore: 'either' as const, quantity: 1 });
+  const [newItem, setNewItem] = useState<{ name: string; preferredStore: PreferredStore; quantity: number }>({
+    name: '',
+    preferredStore: 'either',
+    quantity: 1,
+  });
 
   const addItem = () => {
     if (!newItem.name) return;
@@ -36,7 +46,7 @@ export default function RecurringItems() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="max-w-3xl mx-auto px-6 py-10">
-        <a href="/" className="text-sm text-zinc-400 hover:text-white">← Dashboard</a>
+        <Link href="/" className="text-sm text-zinc-400 hover:text-white">← Dashboard</Link>
         
         <h1 className="text-4xl font-semibold tracking-tighter mt-4 mb-2">Recurring Items</h1>
         <p className="text-zinc-400 mb-8">These items are automatically considered every time the agent runs.</p>
@@ -52,7 +62,10 @@ export default function RecurringItems() {
           />
           <select 
             value={newItem.preferredStore}
-            onChange={(e) => setNewItem({ ...newItem, preferredStore: e.target.value as any })}
+            onChange={(e) => {
+              const { value } = e.target;
+              if (isPreferredStore(value)) setNewItem({ ...newItem, preferredStore: value });
+            }}
             className="bg-zinc-900 border border-zinc-800 rounded-2xl px-4 text-sm"
           >
             <option value="lunys">Lunys</option>

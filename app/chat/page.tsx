@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 interface Message {
@@ -52,7 +53,7 @@ export default function GrocerBotChat() {
               <div className="text-[10px] text-zinc-500 -mt-1">Tvoj osobný nákupný asistent</div>
             </div>
           </div>
-          <a href="/" className="text-sm text-zinc-400 hover:text-white">← Späť na zoznam</a>
+          <Link href="/" className="text-sm text-zinc-400 hover:text-white">← Späť na zoznam</Link>
         </div>
       </div>
 
