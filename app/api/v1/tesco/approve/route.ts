@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const proposal = await prisma.tescoProposal.findFirst({
       where: {
         householdId: household.id,
-        status: { in: ['ready', 'draft', 'failed'] },
+        status: { in: ['ready', 'draft', 'failed', 'cart_ready'] },
       },
       orderBy: { createdAt: 'desc' },
       include: { lines: true },

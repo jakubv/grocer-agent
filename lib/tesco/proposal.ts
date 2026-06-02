@@ -63,7 +63,10 @@ export async function createTescoProposal(householdId: string, enrichFromWeb: bo
   }
 
   await prisma.tescoProposal.updateMany({
-    where: { householdId, status: { in: ['draft', 'ready'] } },
+    where: {
+      householdId,
+      status: { in: ['draft', 'ready', 'cart_ready', 'failed', 'approving'] },
+    },
     data: { status: 'superseded' },
   });
 

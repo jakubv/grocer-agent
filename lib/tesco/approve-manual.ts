@@ -31,10 +31,16 @@ export async function approveTescoManual(
       cartUrl,
       approvedBy,
       approvedAt: new Date(),
-      errorMessage:
-        'Tesco blokuje automatické plnenie — pridajte položky cez odkazy „Hľadať“ (prvý výsledok v každom vyhľadávaní).',
+      errorMessage: null,
     },
   });
+
+  for (const line of lines) {
+    await prisma.tescoProposalLine.update({
+      where: { id: line.id },
+      data: { status: 'matched', failReason: null },
+    });
+  }
 
   const final = await prisma.tescoProposal.findUniqueOrThrow({
     where: { id: proposalId },
