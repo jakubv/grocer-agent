@@ -39,4 +39,22 @@ Websupport shared hosting usually does not run Node.js apps. For **today**, Verc
 
 If you only have **classic shared hosting** (PHP only), use **Vercel** or a small VPS for the Next.js app and point a subdomain (e.g. `nakup.vasadomena.sk`) via CNAME to Vercel.
 
-Send your hosting type (shared / VPS / Node support) and domain name to wire DNS instructions.
+## Custom domain: nakup.voskar.sk
+
+**Live now (no DNS needed):** https://grocer-agent.vercel.app
+
+`voskar.sk` uses Websupport nameservers. Add this record in Websupport DNS (or run `npm run dns:setup` with API keys):
+
+| Type | Name  | Value        |
+|------|-------|--------------|
+| A    | nakup | 76.76.21.21  |
+
+API keys: [websupport.sk → API keys](https://www.websupport.sk/podpora/kb/api-keys/) → then:
+
+```bash
+export WEBSUPPORT_API_KEY="..."
+export WEBSUPPORT_SECRET="..."
+npm run dns:setup
+```
+
+`groceragent.sk` is **not registered** — use `nakup.voskar.sk` or the `.vercel.app` URL.
