@@ -13,7 +13,8 @@
     "db:push": "prisma db push",
     "dns:setup": "node scripts/websupport-dns.mjs",
     "tesco:login": "tsx scripts/tesco-login.mjs",
-    "tesco:approve": "node scripts/tesco-approve.mjs"
+    "tesco:approve": "node scripts/tesco-approve.mjs",
+    "tesco:open-items": "node --import tsx scripts/tesco-open-items.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.17.3",

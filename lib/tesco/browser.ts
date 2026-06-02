@@ -121,6 +121,13 @@ export async function fillTescoCart(
         });
         await page.waitForTimeout(2000);
 
+        const denied = await page.title().catch(() => '');
+        if (denied.includes('Access Denied')) {
+          throw new Error(
+            'Tesco blokuje automatizáciu. Spustite: npm run tesco:open-items (otvorí vyhľadávania v Safari/Chrome).'
+          );
+        }
+
         const productLink = page
           .locator('a[data-testid="product-tile-link"], a[href*="/products/"]')
           .first();
