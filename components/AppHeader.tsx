@@ -8,6 +8,7 @@ import { useState } from 'react';
 
 const NAV = [
   { href: '/', label: 'Zoznam' },
+  { href: '/tesco', label: 'Tesco' },
   { href: '/chat', label: 'GrocerBot' },
   { href: '/history', label: 'História' },
 ] as const;

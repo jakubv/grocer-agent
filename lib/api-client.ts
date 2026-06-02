@@ -116,6 +116,63 @@ export async function fetchHistory(limit = 20, offset = 0) {
   }>(`/history?limit=${limit}&offset=${offset}`);
 }
 
+export interface TescoProposalLine {
+  id: string;
+  shopping_item_id: string | null;
+  raw_name: string;
+  quantity: number;
+  unit: string | null;
+  search_query: string;
+  tesco_product_name: string | null;
+  tesco_price: number | null;
+  tesco_product_url: string | null;
+  confidence: number | null;
+  status: string;
+  fail_reason: string | null;
+}
+
+export interface TescoProposal {
+  id: string;
+  status: string;
+  estimated_total: number | null;
+  cart_url: string | null;
+  error_message: string | null;
+  lines: TescoProposalLine[];
+}
+
+export async function prepareTescoProposal() {
+  return apiFetch<{ proposal: TescoProposal }>('/tesco/prepare', { method: 'POST', body: '{}' });
+}
+
+export async function fetchTescoProposal() {
+  return apiFetch<{ proposal: TescoProposal | null }>('/tesco/proposal');
+}
+
+export async function fetchTescoSession() {
+  return apiFetch<{ connected: boolean; hint: string | null }>('/tesco/session');
+}
+
+export async function updateTescoLine(
+  lineId: string,
+  data: { search_query?: string; quantity?: number; status?: string }
+) {
+  return apiFetch(`/tesco/proposal/lines/${lineId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function approveTescoProposal(approvedBy: HouseholdUserName) {
+  return apiFetch<{
+    proposal: TescoProposal;
+    cart_url?: string;
+    message?: string;
+  }>('/tesco/approve', {
+    method: 'POST',
+    body: JSON.stringify({ approved_by: approvedBy }),
+  });
+}
+
 export async function fetchHistoryDetail(id: string) {
   return apiFetch<{
     id: string;

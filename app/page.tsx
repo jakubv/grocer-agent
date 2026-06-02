@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { AccessGate } from '@/components/AccessGate';
 import { AppHeader } from '@/components/AppHeader';
@@ -123,14 +124,26 @@ export default function ShoppingList() {
               {items.length} položiek • synchronizácia každé 4 s • Utorok / Štvrtok
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowArchive(true)}
-            disabled={items.length === 0}
-            className="w-full sm:w-auto px-6 py-3.5 bg-white text-black rounded-2xl font-semibold disabled:opacity-40 touch-manipulation"
-          >
-            Archivovať a objednať
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Link
+              href="/tesco"
+              className={`text-center px-6 py-3.5 rounded-2xl font-semibold touch-manipulation ${
+                items.length === 0
+                  ? 'pointer-events-none opacity-40 bg-zinc-800 text-zinc-500'
+                  : 'bg-emerald-500 text-black'
+              }`}
+            >
+              Objednať v Tesco →
+            </Link>
+            <button
+              type="button"
+              onClick={() => setShowArchive(true)}
+              disabled={items.length === 0}
+              className="w-full sm:w-auto px-6 py-3.5 bg-white text-black rounded-2xl font-semibold disabled:opacity-40 touch-manipulation"
+            >
+              Archivovať
+            </button>
+          </div>
         </div>
 
         {error && (

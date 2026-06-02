@@ -11,7 +11,9 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
-    "dns:setup": "node scripts/websupport-dns.mjs"
+    "dns:setup": "node scripts/websupport-dns.mjs",
+    "tesco:login": "tsx scripts/tesco-login.mjs",
+    "tesco:approve": "node scripts/tesco-approve.mjs"
   },
   "dependencies": {
     "@libsql/client": "^0.17.3",
