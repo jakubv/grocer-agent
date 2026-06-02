@@ -65,7 +65,14 @@ export default function TescoReviewPage() {
     try {
       const res = await approveTescoProposal(getCurrentUser());
       setProposal(res.proposal);
-      if (res.cart_url) {
+      if (res.mode === 'manual' && res.search_urls?.length) {
+        for (const link of res.search_urls) {
+          window.open(link.url, '_blank', 'noopener,noreferrer');
+        }
+        if (res.cart_url) {
+          window.open(res.cart_url, '_blank', 'noopener,noreferrer');
+        }
+      } else if (res.cart_url) {
         window.open(res.cart_url, '_blank', 'noopener,noreferrer');
       }
     } catch (e) {
@@ -124,7 +131,7 @@ export default function TescoReviewPage() {
               disabled={!!busy || activeLines.length === 0}
               className="px-5 py-3 bg-emerald-500 text-black rounded-2xl font-semibold disabled:opacity-40 touch-manipulation"
             >
-              {busy === 'approve' ? 'Plním košík…' : '2. Schváliť a naplniť košík Tesco'}
+              {busy === 'approve' ? 'Otváram Tesco…' : '2. Schváliť a otvoriť Tesco'}
             </button>
           )}
         </div>
@@ -226,9 +233,9 @@ export default function TescoReviewPage() {
         )}
 
         <p className="text-xs text-zinc-500 leading-relaxed">
-          Po schválení agent naplní košík na Tesco. Platbu a doručenie dokončíte vy na stránke Tesco.
-          Ak schválenie zlyhá na serveri, spustite na Macu:{' '}
-          <code>npm run tesco:approve</code> (s bežiacim <code>npm run dev</code>).
+          Po schválení sa otvoria vyhľadávania v Tesco — v každom pridajte prvý vhodný produkt do
+          košíka, potom zaplaťte na Tesco. (Automatické plnenie na serveri nie je možné — Tesco
+          blokuje robotov.)
         </p>
       </div>
     </div>

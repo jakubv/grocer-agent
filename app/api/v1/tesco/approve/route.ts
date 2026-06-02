@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authorizeRequest, unauthorizedResponse } from '@/lib/access';
 import { getOrCreateHousehold, parseAddedBy } from '@/lib/household';
 import { prisma } from '@/lib/prisma';
-
+import { approveTescoManual } from '@/lib/tesco/approve-manual';
 import { hasTescoSession } from '@/lib/tesco/session';
-import { serializeProposal } from '@/lib/tesco/proposal';
 
 export const runtime = 'nodejs';
-export const maxDuration = 300;
+export const maxDuration = 60;
+
+/** Playwright cart fill only when explicitly enabled (local worker). Never on Vercel. */
+function usePlaywrightApprove(): boolean {
+  if (process.env.VERCEL) return false;
+  return process.env.TESCO_USE_PLAYWRIGHT === 'true';
+}
 
 export async function POST(request: NextRequest) {
   if (!authorizeRequest(request)) return unauthorizedResponse();
@@ -16,20 +21,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const household = await getOrCreateHousehold();
     const approvedBy = parseAddedBy(body.approved_by);
-
-    const loggedIn = await hasTescoSession(household.id);
-    if (!loggedIn) {
-      return NextResponse.json(
-        {
-          error: {
-            code: 'NO_TESCO_SESSION',
-            message:
-              'Najprv sa prihláste do Tesco: na Macu spustite npm run tesco:login v priečinku grocer-agent.',
-          },
-        },
-        { status: 400 }
-      );
-    }
 
     const proposal = await prisma.tescoProposal.findFirst({
       where: {
@@ -55,12 +46,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Production + web UI: manual flow (Tesco blocks bots; Playwright missing on Vercel)
+    if (!usePlaywrightApprove()) {
+      const result = await approveTescoManual(household.id, proposal.id, approvedBy);
+      return NextResponse.json(result);
+    }
+
+    const loggedIn = await hasTescoSession(household.id);
+    if (!loggedIn) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'NO_TESCO_SESSION',
+            message:
+              'Najprv spustite npm run tesco:login (Mac) alebo použite manuálne odkazy v aplikácii.',
+          },
+        },
+        { status: 400 }
+      );
+    }
+
     await prisma.tescoProposal.update({
       where: { id: proposal.id },
       data: { status: 'approving', approvedBy, approvedAt: new Date() },
     });
 
     const { fillTescoCart } = await import('@/lib/tesco/browser');
+    const { serializeProposal } = await import('@/lib/tesco/proposal');
     const { results, cartUrl } = await fillTescoCart(
       household.id,
       linesToFill.map((l) => ({
@@ -98,6 +110,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       proposal: serializeProposal(final),
       cart_url: cartUrl,
+      mode: 'automated',
       message:
         failed === 0
           ? 'Košík Tesco je pripravený. Dokončite objednávku na Tesco (platba u vás).'
@@ -109,7 +122,7 @@ export async function POST(request: NextRequest) {
       {
         error: {
           code: 'APPROVE_FAILED',
-          message: error instanceof Error ? error.message : 'Approve failed',
+          message: error instanceof Error ? error.message : 'Schválenie zlyhalo',
         },
       },
       { status: 500 }

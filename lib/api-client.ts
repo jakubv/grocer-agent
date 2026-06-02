@@ -162,11 +162,20 @@ export async function updateTescoLine(
   });
 }
 
+export interface TescoSearchLink {
+  line_id: string;
+  raw_name: string;
+  search_query: string;
+  url: string;
+}
+
 export async function approveTescoProposal(approvedBy: HouseholdUserName) {
   return apiFetch<{
     proposal: TescoProposal;
     cart_url?: string;
     message?: string;
+    mode?: 'manual' | 'automated';
+    search_urls?: TescoSearchLink[];
   }>('/tesco/approve', {
     method: 'POST',
     body: JSON.stringify({ approved_by: approvedBy }),
