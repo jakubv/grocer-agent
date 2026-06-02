@@ -17,20 +17,41 @@ export interface MatchedLine {
   confidence: number;
 }
 
+const QUERY_NORMALIZATIONS: Array<{ pattern: RegExp; query: string; product: string }> = [
+  { pattern: /sack[yí]?\s+do\s+kosa/i, query: 'odpadkové vrecká', product: 'Odpadkové vrecká' },
+  { pattern: /kosa\s+kupel/i, query: 'odpadkové vrecká', product: 'Odpadkové vrecká' },
+  { pattern: /granule\s+pre\s+psa/i, query: 'granule pre psy', product: 'Granule pre psy' },
+  { pattern: /mlieko/i, query: 'mlieko čerstvé', product: 'Mlieko' },
+  { pattern: /chlieb/i, query: 'chlieb', product: 'Chlieb' },
+  { pattern: /vajc/i, query: 'vajcia', product: 'Vajcia' },
+];
+
+function normalizeForTesco(name: string): { search_query: string; tesco_product_name: string } | null {
+  for (const rule of QUERY_NORMALIZATIONS) {
+    if (rule.pattern.test(name)) {
+      return { search_query: rule.query, tesco_product_name: rule.product };
+    }
+  }
+  return null;
+}
+
 export async function matchItemsToTesco(items: ListItemInput[]): Promise<MatchedLine[]> {
   if (items.length === 0) return [];
 
   const apiKey = process.env.XAI_API_KEY;
   if (!apiKey) {
-    return items.map((item) => ({
-      shopping_item_id: item.id,
-      raw_name: item.name,
-      quantity: item.quantity ?? 1,
-      unit: item.unit,
-      search_query: item.name,
-      tesco_product_name: item.name,
-      confidence: 0.3,
-    }));
+    return items.map((item) => {
+      const norm = normalizeForTesco(item.name);
+      return {
+        shopping_item_id: item.id,
+        raw_name: item.name,
+        quantity: item.quantity ?? 1,
+        unit: item.unit,
+        search_query: norm?.search_query ?? item.name,
+        tesco_product_name: norm?.tesco_product_name ?? item.name,
+        confidence: norm ? 0.65 : 0.3,
+      };
+    });
   }
 
   const payload = items.map((i) => ({
