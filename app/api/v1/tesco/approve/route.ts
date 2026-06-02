@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { authorizeRequest, unauthorizedResponse } from '@/lib/access';
 import { getOrCreateHousehold, parseAddedBy } from '@/lib/household';
 import { prisma } from '@/lib/prisma';
-import { fillTescoCart } from '@/lib/tesco/browser';
+
 import { hasTescoSession } from '@/lib/tesco/session';
 import { serializeProposal } from '@/lib/tesco/proposal';
 
@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
       data: { status: 'approving', approvedBy, approvedAt: new Date() },
     });
 
+    const { fillTescoCart } = await import('@/lib/tesco/browser');
     const { results, cartUrl } = await fillTescoCart(
       household.id,
       linesToFill.map((l) => ({

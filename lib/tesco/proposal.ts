@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { getOrCreateActiveList, getOrCreateHousehold } from '@/lib/household';
 import { matchItemsToTesco } from './matcher';
-import { searchTescoProduct } from './browser';
 
 export function serializeProposal(
   proposal: {
@@ -101,6 +100,7 @@ export async function createTescoProposal(householdId: string, enrichFromWeb: bo
   });
 
   if (enrichFromWeb && process.env.TESCO_ENRICH_SEARCH === 'true') {
+    const { searchTescoProduct } = await import('./browser');
     let total = 0;
     for (const line of proposal.lines) {
       const hit = await searchTescoProduct(householdId, line.searchQuery);
