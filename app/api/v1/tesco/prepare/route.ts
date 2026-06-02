@@ -3,6 +3,7 @@ import { authorizeRequest, unauthorizedResponse } from '@/lib/access';
 import { getOrCreateHousehold } from '@/lib/household';
 import { createTescoProposal, serializeProposal } from '@/lib/tesco/proposal';
 
+export const runtime = 'nodejs';
 export const maxDuration = 120;
 
 export async function POST(request: NextRequest) {

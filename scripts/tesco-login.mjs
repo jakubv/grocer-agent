@@ -26,11 +26,13 @@ async function main() {
   const browser = await chromium.launch({ headless: false });
   const context = await browser.newContext({ locale: 'sk-SK' });
   const page = await context.newPage();
-  await page.goto(`${TESCO_BASE}/groceries/sk-SK/login`);
-  console.log('\n→ Prihláste sa do Tesco v okne prehliadača.');
-  console.log('→ Po prihlásení (vidíte úvodný katalóg) zatvorte okno alebo počkajte 3 min.\n');
-  await page.waitForURL(/groceries\/sk-SK(?!\/login)/, { timeout: 180_000 }).catch(() => {});
-  await page.waitForTimeout(3000);
+  await page.goto(`${TESCO_BASE}/groceries/sk-SK/login`, { waitUntil: 'domcontentloaded' });
+  console.log('\n→ Prihláste sa do Tesco v otvorenom okne.');
+  console.log('→ Keď ste prihlásený, vráťte sa sem a stlačte ENTER.\n');
+  await new Promise((resolve) => {
+    process.stdin.resume();
+    process.stdin.once('data', resolve);
+  });
   const cookies = await context.cookies();
   await prisma.storeSession.upsert({
     where: { householdId_store: { householdId: household.id, store: 'tesco' } },
