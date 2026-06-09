@@ -12,7 +12,7 @@ import {
 } from '@/lib/api-client';
 
 export default function ShoppingHistory() {
-  const [unlocked, setUnlocked] = useState(false);
+  const [unlocked, setUnlocked] = useState(() => Boolean(getStoredToken()));
   const [lists, setLists] = useState<HistorySummary[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [detailItems, setDetailItems] = useState<
@@ -29,13 +29,13 @@ export default function ShoppingHistory() {
     }
   }, []);
 
-  useEffect(() => {
-    if (getStoredToken()) setUnlocked(true);
-  }, []);
 
   useEffect(() => {
     if (!unlocked) return;
-    load();
+    const timeout = setTimeout(() => {
+      void load();
+    }, 0);
+    return () => clearTimeout(timeout);
   }, [unlocked, load]);
 
   const toggleDetail = async (id: string) => {

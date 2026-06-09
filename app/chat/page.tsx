@@ -11,7 +11,7 @@ interface Message {
 }
 
 export default function GrocerBotChat() {
-  const [unlocked, setUnlocked] = useState(false);
+  const [unlocked, setUnlocked] = useState(() => Boolean(getStoredToken()));
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -23,9 +23,6 @@ export default function GrocerBotChat() {
   const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (getStoredToken()) setUnlocked(true);
-  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

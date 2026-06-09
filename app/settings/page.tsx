@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 export default function SettingsPage() {
@@ -12,7 +13,7 @@ export default function SettingsPage() {
     dedicatedCardWeeklyLimit: 350,
   });
 
-  const [dedicatedCardLast4, setDedicatedCardLast4] = useState('4821');
+  const [dedicatedCardLast4] = useState('4821');
 
   const updateLimit = (key: keyof typeof limits, value: number) => {
     setLimits(prev => ({ ...prev, [key]: value }));
@@ -22,7 +23,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-zinc-950 text-white">
       <div className="max-w-3xl mx-auto px-6 py-10">
         <div className="mb-8">
-          <a href="/" className="text-sm text-zinc-400 hover:text-white">← Back to dashboard</a>
+          <Link href="/" className="text-sm text-zinc-400 hover:text-white">← Back to dashboard</Link>
           <h1 className="text-4xl font-semibold tracking-tighter mt-3">Agent Settings</h1>
           <p className="text-zinc-400 mt-2">These limits are hard. The agent cannot exceed them under any circumstances.</p>
         </div>

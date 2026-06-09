@@ -27,7 +27,7 @@ function openTescoTabs(links: TescoSearchLink[], cartUrl?: string) {
 }
 
 export default function TescoReviewPage() {
-  const [unlocked, setUnlocked] = useState(false);
+  const [unlocked, setUnlocked] = useState(() => Boolean(getStoredToken()));
   const [proposal, setProposal] = useState<TescoProposal | null>(null);
   const [lastSearchUrls, setLastSearchUrls] = useState<TescoSearchLink[]>([]);
   const [sessionOk, setSessionOk] = useState<boolean | null>(null);
@@ -49,13 +49,13 @@ export default function TescoReviewPage() {
     }
   }, []);
 
-  useEffect(() => {
-    if (getStoredToken()) setUnlocked(true);
-  }, []);
 
   useEffect(() => {
     if (!unlocked) return;
-    load();
+    const timeout = setTimeout(() => {
+      void load();
+    }, 0);
+    return () => clearTimeout(timeout);
   }, [unlocked, load]);
 
   const prepare = async () => {

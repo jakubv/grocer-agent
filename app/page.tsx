@@ -18,7 +18,7 @@ import { CATEGORIES, DEFAULT_CATEGORY, sortCategories } from '@/lib/categories';
 type OrderSource = 'Lunys' | 'Tesco' | 'Both';
 
 export default function ShoppingList() {
-  const [unlocked, setUnlocked] = useState(false);
+  const [unlocked, setUnlocked] = useState(() => Boolean(getStoredToken()));
   const [items, setItems] = useState<ListItem[]>([]);
   const [newItem, setNewItem] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(DEFAULT_CATEGORY);
@@ -41,15 +41,17 @@ export default function ShoppingList() {
     }
   }, []);
 
-  useEffect(() => {
-    if (getStoredToken()) setUnlocked(true);
-  }, []);
 
   useEffect(() => {
     if (!unlocked) return;
-    loadList();
+    const timeout = setTimeout(() => {
+      void loadList();
+    }, 0);
     const interval = setInterval(loadList, 4000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
   }, [unlocked, loadList]);
 
   const addItem = async () => {

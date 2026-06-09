@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 export const maxDuration = 60;
 
 /** Playwright cart fill only when explicitly enabled (local worker). Never on Vercel. */
-function usePlaywrightApprove(): boolean {
+function shouldUsePlaywrightApprove(): boolean {
   if (process.env.VERCEL) return false;
   return process.env.TESCO_USE_PLAYWRIGHT === 'true';
 }
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Production + web UI: manual flow (Tesco blocks bots; Playwright missing on Vercel)
-    if (!usePlaywrightApprove()) {
+    if (!shouldUsePlaywrightApprove()) {
       const result = await approveTescoManual(household.id, proposal.id, approvedBy);
       return NextResponse.json(result);
     }
