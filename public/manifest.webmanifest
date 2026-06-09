@@ -1,7 +1,7 @@
 {
-  "name": "GrocerAgent",
-  "short_name": "GrocerAgent",
-  "description": "Spoločný nákupný zoznam — Jakub & Mirka",
+  "name": "Nákupy Lux",
+  "short_name": "Nákupy Lux",
+  "description": "Rodinný nákupný zoznam — Jakub & Mirka",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#09090b",

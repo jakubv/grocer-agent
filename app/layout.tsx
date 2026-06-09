@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'GrocerAgent',
-  description: 'Spoločný nákupný zoznam pre Jakuba a Mirku',
+  title: 'Nákupy Lux',
+  description: 'Rodinný nákupný zoznam pre Jakuba a Mirku',
   manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'GrocerAgent',
+    title: 'Nákupy Lux',
   },
 };
 
