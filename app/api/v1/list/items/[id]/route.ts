@@ -1,93 +1,90 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { authorizeRequest, unauthorizedResponse } from '@/lib/access';
+import { normalizeCategory } from '@/lib/categories';
+import {
+  getOrCreateActiveList,
+  getOrCreateHousehold,
+  serializeItem,
+} from '@/lib/household';
 import { prisma } from '@/lib/prisma';
 
-type UpdateShoppingItemBody = {
-  name?: unknown;
-  quantity?: unknown;
-  unit?: unknown;
-  category?: unknown;
-  notes?: unknown;
-  isChecked?: unknown;
-};
+type RouteContext = { params: Promise<{ id: string }> };
 
-const toOptionalString = (value: unknown) =>
-  typeof value === 'string' && value.trim() ? value.trim() : null;
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  if (!authorizeRequest(request)) return unauthorizedResponse();
 
-const toOptionalNumber = (value: unknown) => {
-  if (value === null) return null;
-  if (typeof value === 'number' && Number.isFinite(value)) return Math.trunc(value);
-  if (typeof value === 'string' && value.trim()) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? Math.trunc(parsed) : null;
-  }
-  return undefined;
-};
-
-// PATCH /api/v1/list/items/{id}
-// Update an item (partial update supported)
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const { id } = await params;
+  const { id } = await context.params;
 
   try {
-    const body = (await request.json()) as UpdateShoppingItemBody;
-    const data: {
-      name?: string;
-      quantity?: number | null;
-      unit?: string | null;
-      category?: string;
-      notes?: string | null;
-      isChecked?: boolean;
-    } = {};
+    const body = await request.json();
+    const household = await getOrCreateHousehold();
+    const list = await getOrCreateActiveList(household.id);
 
-    if (typeof body.name === 'string') data.name = body.name.trim();
-    if ('quantity' in body) data.quantity = toOptionalNumber(body.quantity);
-    if ('unit' in body) data.unit = toOptionalString(body.unit);
-    if (typeof body.category === 'string' && body.category.trim()) data.category = body.category.trim();
-    if ('notes' in body) data.notes = toOptionalString(body.notes);
-    if (typeof body.isChecked === 'boolean') data.isChecked = body.isChecked;
+    const existing = await prisma.shoppingItem.findFirst({
+      where: { id, listId: list.id },
+    });
 
-    if (data.name === '') {
+    if (!existing) {
       return NextResponse.json(
-        { error: 'INVALID_INPUT', message: 'name cannot be empty' },
-        { status: 400 },
+        { error: { code: 'ITEM_NOT_FOUND', message: `Item ${id} not found` } },
+        { status: 404 }
       );
     }
 
-    const updatedItem = await prisma.shoppingItem.update({
+    const updated = await prisma.shoppingItem.update({
       where: { id },
-      data,
+      data: {
+        name: body.name !== undefined ? String(body.name).trim() : undefined,
+        quantity: body.quantity !== undefined ? body.quantity : undefined,
+        unit: body.unit !== undefined ? body.unit : undefined,
+        category:
+          body.category !== undefined
+            ? normalizeCategory(body.category)
+            : undefined,
+        notes: body.notes !== undefined ? body.notes : undefined,
+        isChecked:
+          body.is_checked !== undefined ? Boolean(body.is_checked) : undefined,
+      },
     });
 
-    return NextResponse.json({ item: updatedItem });
-  } catch (error: unknown) {
-    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2025') {
-      return NextResponse.json({ error: 'NOT_FOUND' }, { status: 404 });
-    }
-
+    return NextResponse.json({ item: serializeItem(updated) });
+  } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: 'INTERNAL_ERROR', message: 'Internal Server Error' } },
+      { status: 500 }
+    );
   }
 }
 
-// DELETE /api/v1/list/items/{id}
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const { id } = await params;
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  if (!authorizeRequest(request)) return unauthorizedResponse();
+
+  const { id } = await context.params;
 
   try {
-    await prisma.shoppingItem.delete({ where: { id } });
-    return NextResponse.json({ message: 'Item deleted successfully' });
-  } catch (error: unknown) {
-    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2025') {
-      return NextResponse.json({ error: 'NOT_FOUND' }, { status: 404 });
+    const household = await getOrCreateHousehold();
+    const list = await getOrCreateActiveList(household.id);
+
+    const existing = await prisma.shoppingItem.findFirst({
+      where: { id, listId: list.id },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: { code: 'ITEM_NOT_FOUND', message: `Item ${id} not found` } },
+        { status: 404 }
+      );
     }
 
+    await prisma.shoppingItem.delete({ where: { id } });
+
+    return NextResponse.json({ message: 'Item deleted' });
+  } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: 'INTERNAL_ERROR', message: 'Internal Server Error' } },
+      { status: 500 }
+    );
   }
 }

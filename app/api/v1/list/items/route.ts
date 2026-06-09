@@ -1,91 +1,71 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { authorizeRequest, unauthorizedResponse } from '@/lib/access';
+import { DEFAULT_CATEGORY, normalizeCategory } from '@/lib/categories';
+import {
+  ensureUsers,
+  getOrCreateActiveList,
+  getOrCreateHousehold,
+  parseAddedBy,
+  serializeItem,
+} from '@/lib/household';
 import { prisma } from '@/lib/prisma';
 
-type IncomingShoppingItem = {
-  name?: unknown;
-  quantity?: unknown;
-  unit?: unknown;
-  category?: unknown;
-  addedBy?: unknown;
-  notes?: unknown;
-};
+interface IncomingItem {
+  name: string;
+  quantity?: number | null;
+  unit?: string | null;
+  category?: string | null;
+  notes?: string | null;
+}
 
-const toOptionalString = (value: unknown) =>
-  typeof value === 'string' && value.trim() ? value.trim() : null;
-
-const toOptionalNumber = (value: unknown) => {
-  if (typeof value === 'number' && Number.isFinite(value)) return Math.trunc(value);
-  if (typeof value === 'string' && value.trim()) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? Math.trunc(parsed) : null;
-  }
-  return null;
-};
-
-// POST /api/v1/list/items
-// Add one or more items to the current shopping list.
 export async function POST(request: NextRequest) {
+  if (!authorizeRequest(request)) return unauthorizedResponse();
+
   try {
     const body = await request.json();
-    const { items } = body as { items?: IncomingShoppingItem[] };
+    const { items, added_by: addedByRaw } = body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
-        { error: 'INVALID_INPUT', message: 'items array is required' },
-        { status: 400 },
+        { error: { code: 'INVALID_INPUT', message: 'items array is required' } },
+        { status: 400 }
       );
     }
 
-    const invalidItem = items.find((item) => typeof item.name !== 'string' || !item.name.trim());
-    if (invalidItem) {
-      return NextResponse.json(
-        { error: 'INVALID_INPUT', message: 'each item requires a non-empty name' },
-        { status: 400 },
-      );
-    }
-
-    // Get active list (create if it doesn't exist)
-    let household = await prisma.household.findFirst();
-    if (!household) {
-      household = await prisma.household.create({ data: { name: 'Voskar Household' } });
-    }
-
-    let list = await prisma.shoppingList.findFirst({
-      where: { householdId: household.id, status: 'active' },
-    });
-
-    if (!list) {
-      list = await prisma.shoppingList.create({
-        data: { householdId: household.id, status: 'active' },
-      });
-    }
+    const addedBy = parseAddedBy(addedByRaw);
+    const household = await getOrCreateHousehold();
+    await ensureUsers(household.id);
+    const list = await getOrCreateActiveList(household.id);
 
     const createdItems = await prisma.$transaction(
-      items.map((item) =>
+      items.map((item: IncomingItem) =>
         prisma.shoppingItem.create({
           data: {
             listId: list.id,
             name: String(item.name).trim(),
-            quantity: toOptionalNumber(item.quantity),
-            unit: toOptionalString(item.unit),
-            category: toOptionalString(item.category) ?? 'Ostatné',
-            addedByUserId: toOptionalString(item.addedBy) ?? 'agent',
-            notes: toOptionalString(item.notes),
+            quantity: item.quantity ?? null,
+            unit: item.unit ?? null,
+            category: normalizeCategory(item.category ?? DEFAULT_CATEGORY),
+            addedByUserId: addedBy,
+            notes: item.notes ?? null,
             isChecked: false,
           },
-        }),
-      ),
+        })
+      )
     );
 
     return NextResponse.json(
       {
         message: 'Items added successfully',
-        items: createdItems,
+        items: createdItems.map(serializeItem),
       },
-      { status: 201 },
+      { status: 201 }
     );
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: 'INTERNAL_ERROR', message: 'Internal Server Error' } },
+      { status: 500 }
+    );
   }
 }

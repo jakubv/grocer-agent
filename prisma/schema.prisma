@@ -19,6 +19,8 @@ model Household {
   shoppingLists     ShoppingList[]
   archivedLists     ArchivedList[]
   agentCredentials  AgentCredential[]
+  tescoProposals    TescoProposal[]
+  storeSessions     StoreSession[]
 }
 
 model User {
@@ -95,5 +97,54 @@ model AgentCredential {
   revokedAt   DateTime?
 
   household Household @relation(fields: [householdId], references: [id])
+}
+
+// Tesco cart proposal — map household list → Tesco products → user approves → fill cart
+model TescoProposal {
+  id             String   @id @default(cuid())
+  householdId    String
+  shoppingListId String
+  status         String   @default("draft") // draft | ready | approving | cart_ready | failed
+  estimatedTotal Float?
+  cartUrl        String?
+  errorMessage   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  approvedAt     DateTime?
+  approvedBy     String?
+
+  household Household           @relation(fields: [householdId], references: [id])
+  lines     TescoProposalLine[]
+}
+
+model TescoProposalLine {
+  id              String  @id @default(cuid())
+  proposalId      String
+  shoppingItemId  String?
+  rawName         String
+  quantity        Int     @default(1)
+  unit            String?
+  searchQuery     String
+  tescoProductName String?
+  tescoPrice      Float?
+  tescoProductUrl String?
+  tescoProductId  String?
+  confidence      Float?
+  status          String  @default("pending") // pending | matched | approved | skipped | failed
+  failReason      String?
+
+  proposal TescoProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+}
+
+model StoreSession {
+  id          String   @id @default(cuid())
+  householdId String
+  store       String   // tesco
+  cookiesJson String
+  updatedAt   DateTime @updatedAt
+
+  household Household @relation(fields: [householdId], references: [id])
+
+  @@unique([householdId, store])
 }
 

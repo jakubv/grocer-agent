@@ -28,8 +28,25 @@ Other important documents:
 ## Development
 
 ```bash
+cp .env.example .env
+# Set GA_ACCESS_TOKEN to your household secret
+npm install
+npm run db:migrate
+npm run db:seed
 npm run dev
 ```
+
+Open http://localhost:3000 and enter the access token on each phone (saved locally).
+
+**Production:** see `DEPLOY.md`.
+
+## Use today (Jakub & Mirka)
+
+1. Deploy or run `npm run build && npm start` on a server reachable from your phones.
+2. Both open the URL in the browser → enter the same **prístupový kód** (`GA_ACCESS_TOKEN`).
+3. Pick **Jakub** or **Mirka** in the header — the list syncs every few seconds.
+4. **Add to Home Screen** on iPhone/Android for an app-like icon.
+5. Tuesday/Thursday: **Archivovať a objednať** → choose Lunys / Tesco / Oboje.
 
 ## Long-term Vision
 
