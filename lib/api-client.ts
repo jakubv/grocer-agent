@@ -85,6 +85,23 @@ export async function addItems(
   });
 }
 
+export async function updateItem(
+  id: string,
+  data: Partial<{
+    name: string;
+    category: string;
+    quantity: number | null;
+    unit: string | null;
+    notes: string | null;
+    is_checked: boolean;
+  }>
+) {
+  return apiFetch<{ item: ListItem }>(`/list/items/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
 export async function deleteItem(id: string) {
   return apiFetch(`/list/items/${id}`, { method: 'DELETE' });
 }

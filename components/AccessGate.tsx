@@ -36,13 +36,13 @@ export function AccessGate({
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-6">
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-3xl p-8">
-        <div className="w-12 h-12 rounded-2xl bg-white text-zinc-950 font-bold text-xl flex items-center justify-center mb-4">
-          GA
+      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl shadow-black/30">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-300 via-emerald-300 to-yellow-300 text-zinc-950 font-black text-xl flex items-center justify-center mb-4">
+          N
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">GrocerAgent</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Nákupy Lux</h1>
         <p className="text-zinc-400 text-sm mt-2 mb-6">
-          Zadajte domácnostný prístupový kód (zdieľaný s Mirkou). Uloží sa v telefóne.
+          Súkromný rodinný zoznam pre Jakuba a Mirku. Zadaj domáci prístupový kód — uloží sa iba v tomto zariadení.
         </p>
         <input
           type="password"
@@ -50,7 +50,7 @@ export function AccessGate({
           onChange={(e) => setPin(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && unlock()}
           placeholder="Prístupový kód"
-          className="w-full bg-zinc-950 border border-zinc-700 focus:border-white rounded-2xl px-4 py-3 outline-none mb-3"
+          className="w-full bg-zinc-950 border border-zinc-700 focus:border-emerald-300 rounded-2xl px-4 py-3 outline-none mb-3"
           autoComplete="current-password"
         />
         {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
